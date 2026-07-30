@@ -2,6 +2,7 @@ package com.hei.exo.endpoint.rest.controller;
 
 import com.hei.exo.dto.request.RoomRequest;
 import com.hei.exo.dto.response.RoomResponse;
+import com.hei.exo.exception.RoomNotFoundException;
 import com.hei.exo.model.RoomModel;
 import com.hei.exo.service.RoomService;
 import jakarta.validation.Valid;
@@ -33,7 +34,7 @@ public class RoomController {
   public RoomResponse getById(@PathVariable UUID id) {
     RoomModel model = service.getById(id);
     if (model == null) {
-      throw new RuntimeException("Room not found with id: " + id);
+      throw new RoomNotFoundException(id);
     }
     return toResponse(model);
   }

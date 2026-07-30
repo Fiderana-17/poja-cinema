@@ -1,6 +1,7 @@
 package com.hei.exo.service;
 
 import com.hei.exo.entity.Room;
+import com.hei.exo.exception.RoomNotFoundException;
 import com.hei.exo.mapper.RoomMapper;
 import com.hei.exo.model.RoomModel;
 import com.hei.exo.repository.RoomRepository;
@@ -34,7 +35,7 @@ public class RoomService {
     Room existing =
         repository
             .findById(id)
-            .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+            .orElseThrow(() -> new RoomNotFoundException(id));
     existing.setNumber(model.number());
     existing.setCapacity(model.capacity());
     Room saved = repository.save(existing);
