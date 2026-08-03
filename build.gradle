@@ -118,7 +118,7 @@ dependencies {
 
     // Flyway migrations
     implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.flywaydb:flyway-database-postgresql:9.22.3'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
