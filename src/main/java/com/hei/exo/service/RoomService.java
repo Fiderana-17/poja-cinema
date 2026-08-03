@@ -32,10 +32,7 @@ public class RoomService {
   }
 
   public RoomModel update(UUID id, RoomModel model) {
-    Room existing =
-        repository
-            .findById(id)
-            .orElseThrow(() -> new RoomNotFoundException(id));
+    Room existing = repository.findById(id).orElseThrow(() -> new RoomNotFoundException(id));
     existing.setNumber(model.number());
     existing.setCapacity(model.capacity());
     Room saved = repository.save(existing);

@@ -8,10 +8,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hei.exo.conf.FacadeIT;
 import com.hei.exo.dto.request.RoomRequest;
 import com.hei.exo.repository.RoomRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,8 @@ class RoomControllerIT extends FacadeIT {
             .andReturn();
     UUID roomId =
         UUID.fromString(
-            objectMapper.readTree(createResult.getResponse().getContentAsString())
+            objectMapper
+                .readTree(createResult.getResponse().getContentAsString())
                 .get("id")
                 .asText());
 
@@ -70,9 +71,7 @@ class RoomControllerIT extends FacadeIT {
 
   @Test
   void getRoomById_shouldReturn404WhenNotFound() throws Exception {
-    mockMvc
-        .perform(get("/rooms/{id}", UUID.randomUUID()))
-        .andExpect(status().isNotFound());
+    mockMvc.perform(get("/rooms/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
   }
 
   @Test
@@ -117,7 +116,8 @@ class RoomControllerIT extends FacadeIT {
             .andReturn();
     UUID roomId =
         UUID.fromString(
-            objectMapper.readTree(createResult.getResponse().getContentAsString())
+            objectMapper
+                .readTree(createResult.getResponse().getContentAsString())
                 .get("id")
                 .asText());
 
