@@ -44,6 +44,31 @@ class RoomControllerIT extends FacadeIT {
   }
 
   @Test
+  void getRoomById_shouldReturn200WhenFound() throws Exception {
+    RoomRequest createRequest = new RoomRequest("A1", 50);
+    MvcResult createResult =
+        mockMvc
+            .perform(
+                post("/rooms")
+                    .with(user("manager").roles(MANAGER))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createRequest)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    UUID roomId =
+        UUID.fromString(
+            objectMapper.readTree(createResult.getResponse().getContentAsString())
+                .get("id")
+                .asText());
+
+    mockMvc
+        .perform(get("/rooms/{id}", roomId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.number").value("A1"))
+        .andExpect(jsonPath("$.capacity").value(50));
+  }
+
+  @Test
   void getRoomById_shouldReturn404WhenNotFound() throws Exception {
     mockMvc
         .perform(get("/rooms/{id}", UUID.randomUUID()))
