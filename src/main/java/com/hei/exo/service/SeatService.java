@@ -4,6 +4,7 @@ import com.hei.exo.dto.request.CreateSeatRequest;
 import com.hei.exo.dto.response.SeatResponse;
 import com.hei.exo.exception.NotFoundException;
 import com.hei.exo.mapper.SeatMapper;
+import com.hei.exo.repository.RoomRepository;
 import com.hei.exo.repository.SeatRepository;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class SeatService {
 
   private final SeatRepository seatRepository;
+  private final RoomRepository roomRepository;
   private final SeatMapper seatMapper;
 
   public List<SeatResponse> getAll() {
@@ -29,8 +31,14 @@ public class SeatService {
   }
 
   public SeatResponse create(CreateSeatRequest request) {
-    var seat = seatMapper.toModel(request);
+    var room =
+        roomRepository
+            .findById(request.roomId())
+            .orElseThrow(() -> new NotFoundException("Room not found"));
+
+    var seat = seatMapper.toModel(request, room);
     var savedSeat = seatRepository.save(seat);
+
     return seatMapper.toResponse(savedSeat);
   }
 }
