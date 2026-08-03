@@ -1,4 +1,4 @@
-package com.hei.exo.entity;
+package com.hei.exo.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
