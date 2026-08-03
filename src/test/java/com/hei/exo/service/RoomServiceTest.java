@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.hei.exo.entity.Room;
 import com.hei.exo.exception.RoomNotFoundException;
 import com.hei.exo.mapper.RoomMapper;
+import com.hei.exo.model.Room;
 import com.hei.exo.model.RoomModel;
 import com.hei.exo.repository.RoomRepository;
 import java.util.List;
