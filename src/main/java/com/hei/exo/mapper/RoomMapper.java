@@ -1,6 +1,6 @@
 package com.hei.exo.mapper;
 
-import com.hei.exo.entity.Room;
+import com.hei.exo.model.Room;
 import com.hei.exo.model.RoomModel;
 import org.springframework.stereotype.Component;
 

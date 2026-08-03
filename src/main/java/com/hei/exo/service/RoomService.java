@@ -1,8 +1,8 @@
 package com.hei.exo.service;
 
-import com.hei.exo.entity.Room;
 import com.hei.exo.exception.RoomNotFoundException;
 import com.hei.exo.mapper.RoomMapper;
+import com.hei.exo.model.Room;
 import com.hei.exo.model.RoomModel;
 import com.hei.exo.repository.RoomRepository;
 import java.util.List;
