@@ -10,8 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.hei.exo.conf.FacadeIT;
 import com.hei.exo.dto.request.RoomRequest;
+import com.hei.exo.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +28,12 @@ class RoomControllerIT extends FacadeIT {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
+  @Autowired private RoomRepository roomRepository;
+
+  @BeforeEach
+  void cleanUpRooms() {
+    roomRepository.deleteAll();
+  }
 
   private static final String MANAGER = "MANAGER";
   private static final String CLIENT = "CLIENT";
