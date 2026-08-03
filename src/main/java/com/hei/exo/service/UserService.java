@@ -2,6 +2,8 @@ package com.hei.exo.service;
 
 import com.hei.exo.dto.request.CreateUserRequest;
 import com.hei.exo.dto.response.UserResponse;
+import com.hei.exo.exception.ConflictException;
+import com.hei.exo.exception.NotFoundException;
 import com.hei.exo.mapper.UserMapper;
 import com.hei.exo.repository.UserRepository;
 import java.util.List;
@@ -26,12 +28,12 @@ public class UserService {
     return userRepository
         .findById(id)
         .map(userMapper::toResponse)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new NotFoundException("User not found"));
   }
 
   public UserResponse create(CreateUserRequest request) {
     if (userRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Email already exists");
+      throw new ConflictException("Email already exists");
     }
 
     String passwordHash = passwordEncoder.encode(request.password());
