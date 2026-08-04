@@ -1,0 +1,972 @@
+openapi: 3.0.3
+
+info:
+  title: Cinema API
+  version: 1.0.0
+  description: Strict OpenAPI specification for the current poja-cinema REST API.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Rooms
+  - name: Seats
+  - name: Movies
+  - name: Reservations
+
+paths:
+  /ping:
+    get:
+      tags:
+        - Health
+      summary: Check API availability
+      operationId: ping
+      responses:
+        "200":
+          description: API is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+
+  /health/email:
+    get:
+      tags:
+        - Health
+      summary: Send health check emails
+      operationId: sendHealthEmails
+      parameters:
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          example: user@example.com
+      responses:
+        "200":
+          description: Health emails sent
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        "500":
+          description: Email sending failed
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Authenticate user and return JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: client@example.com
+              password: Password123!
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid credentials or invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List users
+      operationId: getUsers
+      responses:
+        "200":
+          description: Users returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+
+    post:
+      tags:
+        - Users
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+            example:
+              firstName: John
+              lastName: Doe
+              birthdate: "2000-01-01"
+              email: john.doe@example.com
+              password: Password123!
+              phone: "+261340000000"
+              role: CLIENT
+      responses:
+        "200":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by id
+      operationId: getUserById
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms:
+    get:
+      tags:
+        - Rooms
+      summary: List rooms
+      operationId: getRooms
+      responses:
+        "200":
+          description: Rooms returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoomResponse"
+
+    post:
+      tags:
+        - Rooms
+      summary: Create room
+      operationId: createRoom
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - MANAGER
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomRequest"
+            example:
+              number: A1
+              capacity: 50
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not MANAGER
+
+  /rooms/{id}:
+    get:
+      tags:
+        - Rooms
+      summary: Get room by id
+      operationId: getRoomById
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      responses:
+        "200":
+          description: Room found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "404":
+          description: Room not found
+
+    put:
+      tags:
+        - Rooms
+      summary: Update room
+      operationId: updateRoom
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - MANAGER
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomRequest"
+            example:
+              number: A1 Updated
+              capacity: 60
+      responses:
+        "200":
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not MANAGER
+        "404":
+          description: Room not found
+
+  /seats:
+    get:
+      tags:
+        - Seats
+      summary: List seats
+      operationId: getSeats
+      responses:
+        "200":
+          description: Seats returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SeatResponse"
+
+    post:
+      tags:
+        - Seats
+      summary: Create seat
+      operationId: createSeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSeatRequest"
+            example:
+              number: S1
+              roomId: 11111111-1111-4111-8111-111111111111
+      responses:
+        "200":
+          description: Seat created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeatResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /seats/{id}:
+    get:
+      tags:
+        - Seats
+      summary: Get seat by id
+      operationId: getSeatById
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      responses:
+        "200":
+          description: Seat found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeatResponse"
+        "404":
+          description: Seat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /movies:
+    get:
+      tags:
+        - Movies
+      summary: List movies
+      operationId: getMovies
+      responses:
+        "200":
+          description: Movies returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MovieResponse"
+
+  /movies/{id}:
+    get:
+      tags:
+        - Movies
+      summary: Get movie by id
+      operationId: getMovieById
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      responses:
+        "200":
+          description: Movie found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieResponse"
+        "404":
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags:
+        - Movies
+      summary: Update movie
+      operationId: updateMovie
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - MANAGER
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieRequest"
+            example:
+              title: Inception
+              genres:
+                - SCI_FI
+                - ACTION
+              description: A thief who steals corporate secrets through dream-sharing technology.
+              duration: PT2H28M
+      responses:
+        "200":
+          description: Movie updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not MANAGER
+        "404":
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reservations:
+    get:
+      tags:
+        - Reservations
+      summary: List reservations
+      operationId: getReservations
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - EMPLOYEE
+        - MANAGER
+      responses:
+        "200":
+          description: Reservations returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservationResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not EMPLOYEE or MANAGER
+
+    post:
+      tags:
+        - Reservations
+      summary: Create reservation for the authenticated client
+      description: The reservation owner is the authenticated CLIENT from the JWT token. The request body must not contain userId.
+      operationId: createReservation
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - CLIENT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationRequest"
+            example:
+              seatId: 11111111-1111-4111-8111-111111111111
+              projectionId: 22222222-2222-4222-8222-222222222222
+      responses:
+        "200":
+          description: Reservation created with status PENDING
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not CLIENT
+        "404":
+          description: Seat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Seat already reserved for this projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reservations/{id}:
+    get:
+      tags:
+        - Reservations
+      summary: Get reservation by id
+      description: CLIENT can read only his own reservation. EMPLOYEE and MANAGER can read any reservation.
+      operationId: getReservationById
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - CLIENT
+        - EMPLOYEE
+        - MANAGER
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      responses:
+        "200":
+          description: Reservation found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: CLIENT cannot access another user's reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags:
+        - Reservations
+      summary: Update reservation status
+      description: CLIENT can update only his own reservation and only to CANCELED. EMPLOYEE and MANAGER can update reservation status.
+      operationId: updateReservationStatus
+      security:
+        - bearerAuth: []
+      x-required-roles:
+        - CLIENT
+        - EMPLOYEE
+        - MANAGER
+      parameters:
+        - $ref: "#/components/parameters/UuidPathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReservationStatusRequest"
+            examples:
+              cancel:
+                summary: Cancel reservation
+                value:
+                  status: CANCELED
+              validate:
+                summary: Validate reservation
+                value:
+                  status: SUCCESS
+      responses:
+        "200":
+          description: Reservation status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing JWT token
+        "403":
+          description: User is not allowed to update this reservation with the requested status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UuidPathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 11111111-1111-4111-8111-111111111111
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          example: client@example.com
+        password:
+          type: string
+          minLength: 1
+          example: Password123!
+
+    AuthResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - userId
+        - role
+      additionalProperties: false
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token.
+        tokenType:
+          type: string
+          enum:
+            - Bearer
+          example: Bearer
+        userId:
+          type: string
+          format: uuid
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    CreateUserRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - birthdate
+        - email
+        - password
+        - phone
+        - role
+      additionalProperties: false
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          example: John
+        lastName:
+          type: string
+          minLength: 1
+          example: Doe
+        birthdate:
+          type: string
+          format: date
+          example: "2000-01-01"
+        email:
+          type: string
+          format: email
+          minLength: 1
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 1
+          example: Password123!
+        phone:
+          type: string
+          minLength: 1
+          example: "+261340000000"
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - birthdate
+        - email
+        - phone
+        - role
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        birthdate:
+          type: string
+          format: date
+          example: "2000-01-01"
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        phone:
+          type: string
+          example: "+261340000000"
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    RoomRequest:
+      type: object
+      required:
+        - number
+        - capacity
+      additionalProperties: false
+      properties:
+        number:
+          type: string
+          minLength: 1
+          example: A1
+        capacity:
+          type: integer
+          format: int32
+          minimum: 1
+          example: 50
+
+    RoomResponse:
+      type: object
+      required:
+        - id
+        - number
+        - capacity
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+          example: A1
+        capacity:
+          type: integer
+          format: int32
+          example: 50
+
+    CreateSeatRequest:
+      type: object
+      required:
+        - number
+        - roomId
+      additionalProperties: false
+      properties:
+        number:
+          type: string
+          minLength: 1
+          example: S1
+        roomId:
+          type: string
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
+
+    SeatResponse:
+      type: object
+      required:
+        - id
+        - number
+        - roomId
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+          example: S1
+        roomId:
+          type: string
+          format: uuid
+
+    MovieRequest:
+      type: object
+      required:
+        - title
+        - genres
+        - description
+        - duration
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Inception
+        genres:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/Genre"
+        description:
+          type: string
+          minLength: 1
+          example: A thief who steals corporate secrets through dream-sharing technology.
+        duration:
+          type: string
+          format: duration
+          description: ISO-8601 duration.
+          example: PT2H28M
+
+    MovieResponse:
+      type: object
+      required:
+        - id
+        - title
+        - genres
+        - description
+        - duration
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Inception
+        genres:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/Genre"
+        description:
+          type: string
+          example: A thief who steals corporate secrets through dream-sharing technology.
+        duration:
+          type: string
+          format: duration
+          description: ISO-8601 duration.
+          example: PT2H28M
+
+    CreateReservationRequest:
+      type: object
+      required:
+        - seatId
+        - projectionId
+      additionalProperties: false
+      properties:
+        seatId:
+          type: string
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
+        projectionId:
+          type: string
+          format: uuid
+          example: 22222222-2222-4222-8222-222222222222
+
+    UpdateReservationStatusRequest:
+      type: object
+      required:
+        - status
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/ReservationStatus"
+
+    ReservationResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - seatId
+        - projectionId
+        - createdAt
+        - status
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+          description: Owner user id.
+        seatId:
+          type: string
+          format: uuid
+        projectionId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/ReservationStatus"
+
+    ErrorResponse:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+      additionalProperties: false
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+          example: 404
+        error:
+          type: string
+          example: Not Found
+        message:
+          type: string
+          example: Resource not found
+        path:
+          type: string
+          example: /reservations/11111111-1111-4111-8111-111111111111
+
+    UserRole:
+      type: string
+      enum:
+        - CLIENT
+        - EMPLOYEE
+        - MANAGER
+
+    ReservationStatus:
+      type: string
+      enum:
+        - PENDING
+        - SUCCESS
+        - CANCELED
+
+    Genre:
+      type: string
+      enum:
+        - THRILLER
+        - ROMANCE
+        - COMEDY
+        - DRAMA
+        - ACTION
+        - SCI_FI
+        - FANTASY
+        - ANIMATION
