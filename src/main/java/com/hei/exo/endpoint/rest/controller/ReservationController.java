@@ -39,8 +39,11 @@ public class ReservationController {
   }
 
   @PostMapping("/reservations")
-  public ReservationResponse create(@Valid @RequestBody CreateReservationRequest request) {
-    return reservationService.create(request);
+  @PreAuthorize("hasRole('CLIENT')")
+  public ReservationResponse create(
+      @Valid @RequestBody CreateReservationRequest request, Authentication authentication) {
+    var currentUser = currentUserService.getAuthenticatedUser(authentication);
+    return reservationService.create(request, currentUser);
   }
 
   @PutMapping("/reservations/{id}")

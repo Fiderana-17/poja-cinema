@@ -13,7 +13,6 @@ import com.hei.exo.model.User;
 import com.hei.exo.model.UserRole;
 import com.hei.exo.repository.ReservationRepository;
 import com.hei.exo.repository.SeatRepository;
-import com.hei.exo.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 public class ReservationService {
 
   private final ReservationRepository reservationRepository;
-  private final UserRepository userRepository;
   private final SeatRepository seatRepository;
   private final ReservationMapper reservationMapper;
 
@@ -42,12 +40,7 @@ public class ReservationService {
     return reservationMapper.toResponse(reservation);
   }
 
-  public ReservationResponse create(CreateReservationRequest request) {
-    var user =
-        userRepository
-            .findById(request.userId())
-            .orElseThrow(() -> new NotFoundException("User not found"));
-
+  public ReservationResponse create(CreateReservationRequest request, User currentUser) {
     var seat =
         seatRepository
             .findById(request.seatId())
@@ -58,7 +51,7 @@ public class ReservationService {
       throw new ConflictException("Seat already reserved for this projection");
     }
 
-    var reservation = reservationMapper.toModel(request, user, seat);
+    var reservation = reservationMapper.toModel(request, currentUser, seat);
     var savedReservation = reservationRepository.save(reservation);
 
     return reservationMapper.toResponse(savedReservation);
