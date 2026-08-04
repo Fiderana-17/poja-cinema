@@ -26,6 +26,7 @@ public class ReservationMapper {
         reservation.getUser().getId(),
         reservation.getSeat().getId(),
         reservation.getProjectionId(),
+        reservation.getCreatedAt(),
         reservation.getStatus());
   }
 }
