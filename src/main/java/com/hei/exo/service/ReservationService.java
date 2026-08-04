@@ -94,10 +94,6 @@ public class ReservationService {
         throw new ForbiddenException("Client can only cancel a reservation");
       }
     }
-
-    if (role == UserRole.MANAGER && requestedStatus == ReservationStatus.SUCCESS) {
-      throw new ForbiddenException("Only employees can validate a reservation");
-    }
   }
 
   private boolean isOwner(Reservation reservation, User currentUser) {
