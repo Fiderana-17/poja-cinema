@@ -11,32 +11,32 @@ import org.junit.jupiter.api.Test;
 
 class SeatMapperTest {
 
-    private final SeatMapper mapper = new SeatMapper();
+  private final SeatMapper mapper = new SeatMapper();
 
-    @Test
-    void toModel_shouldMapRequestToSeatWithRoom() {
-        UUID roomId = UUID.randomUUID();
-        Room room = new Room(roomId, "A1", 50);
-        CreateSeatRequest request = new CreateSeatRequest("S1", roomId);
+  @Test
+  void toModel_shouldMapRequestToSeatWithRoom() {
+    UUID roomId = UUID.randomUUID();
+    Room room = new Room(roomId, "A1", 50);
+    CreateSeatRequest request = new CreateSeatRequest("S1", roomId);
 
-        Seat result = mapper.toModel(request, room);
+    Seat result = mapper.toModel(request, room);
 
-        assertNull(result.getId());
-        assertEquals("S1", result.getNumber());
-        assertEquals(room, result.getRoom());
-    }
+    assertNull(result.getId());
+    assertEquals("S1", result.getNumber());
+    assertEquals(room, result.getRoom());
+  }
 
-    @Test
-    void toResponse_shouldMapSeatToResponse() {
-        UUID seatId = UUID.randomUUID();
-        UUID roomId = UUID.randomUUID();
-        Room room = new Room(roomId, "A1", 50);
-        Seat seat = new Seat(seatId, "S1", room);
+  @Test
+  void toResponse_shouldMapSeatToResponse() {
+    UUID seatId = UUID.randomUUID();
+    UUID roomId = UUID.randomUUID();
+    Room room = new Room(roomId, "A1", 50);
+    Seat seat = new Seat(seatId, "S1", room);
 
-        SeatResponse result = mapper.toResponse(seat);
+    SeatResponse result = mapper.toResponse(seat);
 
-        assertEquals(seatId, result.id());
-        assertEquals("S1", result.number());
-        assertEquals(roomId, result.roomId());
-    }
+    assertEquals(seatId, result.id());
+    assertEquals("S1", result.number());
+    assertEquals(roomId, result.roomId());
+  }
 }
