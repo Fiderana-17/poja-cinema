@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,7 +39,21 @@ public class Reservation {
   @Column(name = "projection_id", nullable = false)
   private UUID projectionId;
 
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private ReservationStatus status;
+
+  @PrePersist
+  void prePersist() {
+    if (createdAt == null) {
+      createdAt = Instant.now();
+    }
+
+    if (status == null) {
+      status = ReservationStatus.PENDING;
+    }
+  }
 }
