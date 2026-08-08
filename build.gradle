@@ -154,7 +154,7 @@ implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-ser
 testImplementation "org.springframework.security:spring-security-test"
 testImplementation "org.testcontainers:postgresql"
 implementation "org.flywaydb:flyway-core"
-implementation "org.flywaydb:flyway-database-postgresql"
+
 
 
 }
